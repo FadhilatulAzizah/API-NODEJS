@@ -5,15 +5,33 @@ const port = 5775;
 const cors = require("cors");
 const db = require('./db.js');
 
+app.set("view engine", "ejs");
+app.set("views", "./views");
+app.use(express.static(__dirname + "/public"));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.get("/", async (req, res) => {
+    const dtx = await db.getAllBackupWithCount();
+    res.render("beranda", { data: dtx });
+})
 
 app.get("/status", (req, res) => {
     res.send(
         '{"kode":"01", "status":"API Berbasis ExpressJS OK"}'
     );
 })
+
+app.get("/api/backup", async (req, res) => {
+    const dtx = await db.getAllBackupWithCount();
+    res.json(dtx ? dtx : []);
+});
+
+app.get("/api/detail/:id", async (req, res) => {
+    const dtx = await db.getDetailBackup(req.params.id);
+    res.json(dtx);
+});
 
 app.listen(port, () => {
     console.log(`API Berjalan di Port: ${port}`);

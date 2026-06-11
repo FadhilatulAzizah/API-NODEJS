@@ -1,6 +1,5 @@
 const mysql = require('mysql2/promise');
 let sql;
-
 const buatKoneksi = async () => {
     return await mysql.createConnection({
         host: process.env.DB_HOST,
@@ -34,4 +33,29 @@ const tambahTransaksi = async (idx, id, waktux, nominalx, jenisx, deskripsix) =>
     }
 }
 
-module.exports = {buatKoneksi, tambahBackup, tambahTransaksi}
+const getBackup = async () => {
+    const db = await buatKoneksi();
+    sql = "SELECT * FROM backup";
+    const [rows] = await db.execute(sql);
+    return rows.length > 0 ? rows : false;
+}
+
+const getAllBackupWithCount = async () => {
+    const db = await buatKoneksi();
+    sql = `SELECT b.*, COUNT(bt.id) as jumlah_transaksi 
+           FROM backup b 
+           LEFT JOIN backup_transaksi bt ON b.id = bt.id_backup 
+           GROUP BY b.id 
+           ORDER BY b.waktu DESC`;
+    const [rows] = await db.execute(sql);
+    return rows.length > 0 ? rows : [];
+}
+
+const getDetailBackup = async (id_backup) => {
+    const db = await buatKoneksi();
+    sql = `SELECT * FROM backup_transaksi WHERE id_backup = '${id_backup}' ORDER BY tgl_jam DESC`;
+    const [rows] = await db.execute(sql);
+    return rows.length > 0 ? rows : [];
+}
+
+module.exports = {buatKoneksi, tambahBackup, tambahTransaksi, getBackup, getAllBackupWithCount, getDetailBackup}

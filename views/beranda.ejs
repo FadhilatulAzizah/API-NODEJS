@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noted Money - Dashboard Backup</title>
+    <link href="/css/all.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f4ff; min-height: 100vh; }
+
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 220px; height: 100vh;
+            background: linear-gradient(180deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+            z-index: 100; display: flex; flex-direction: column;
+            box-shadow: 4px 0 20px rgba(26,35,126,0.3);
+        }
+        .sidebar-brand {
+            padding: 24px 20px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-brand h4 {
+            color: white; font-weight: 700; font-size: 1rem; margin: 0;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .brand-icon {
+            width: 36px; height: 36px; background: rgba(255,255,255,0.2);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .sidebar-brand small { color: rgba(255,255,255,0.5); font-size: 0.68rem; display: block; margin-top: 2px; }
+        .sidebar-menu { padding: 16px 0; flex: 1; }
+        .menu-label { color: rgba(255,255,255,0.4); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 2px; padding: 10px 20px 6px; font-weight: 600; }
+        .menu-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 20px; color: rgba(255,255,255,0.7);
+            text-decoration: none; font-size: 0.83rem;
+            transition: all 0.2s; cursor: pointer; border: none; background: none; width: 100%;
+            border-left: 3px solid transparent; pointer-events: auto;
+        }
+        .menu-item:hover { background: rgba(255,255,255,0.12); color: white; }
+        .menu-item.active { background: rgba(255,255,255,0.15); color: white; border-left-color: #82b1ff; }
+        .menu-item i { width: 18px; text-align: center; font-size: 0.95rem; }
+        .sidebar-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-footer small { color: rgba(255,255,255,0.4); font-size: 0.68rem; }
+
+        .main-content { margin-left: 220px; min-height: 100vh; }
+
+        .topbar {
+            background: white; padding: 14px 28px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            position: sticky; top: 0; z-index: 99;
+        }
+        .topbar h5 { color: #1a237e; font-weight: 700; margin: 0; font-size: 1rem; }
+        .live-badge {
+            display: flex; align-items: center; gap: 6px;
+            background: #e8f5e9; color: #2e7d32;
+            padding: 5px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+        }
+        .live-dot { width: 7px; height: 7px; background: #4caf50; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
+        .last-update { color: #90a4ae; font-size: 0.72rem; }
+
+        .page-content { padding: 24px 28px; }
+
+        .welcome-card {
+            background: linear-gradient(135deg, #1a237e 0%, #3f51b5 60%, #5c6bc0 100%);
+            border-radius: 18px; padding: 28px 32px;
+            color: white; position: relative; overflow: hidden; margin-bottom: 24px;
+        }
+        .welcome-card::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; background:rgba(255,255,255,0.05); border-radius:50%; }
+        .welcome-card::after  { content:''; position:absolute; bottom:-50px; right:100px; width:130px; height:130px; background:rgba(255,255,255,0.05); border-radius:50%; }
+        .welcome-card h2 { font-weight: 700; font-size: 1.5rem; margin-bottom: 5px; }
+        .welcome-card p  { color: rgba(255,255,255,0.75); margin: 0; font-size: 0.87rem; }
+        .welcome-card .big-icon { position:absolute; right:32px; top:50%; transform:translateY(-50%); font-size:5rem; color:rgba(255,255,255,0.08); }
+
+        .stat-card {
+            background: white; border-radius: 14px; padding: 20px; height: 100%;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        .icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 14px; }
+        .icon-blue   { background: #e3f2fd; color: #1565c0; }
+        .icon-green  { background: #e8f5e9; color: #2e7d32; }
+        .icon-orange { background: #fff3e0; color: #e65100; }
+        .icon-purple { background: #f3e5f5; color: #6a1b9a; }
+        .stat-number { font-size: 1.9rem; font-weight: 700; color: #1a237e; line-height: 1; }
+        .stat-label  { color: #90a4ae; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 4px; }
+        .stat-sub    { font-size: 0.72rem; color: #b0bec5; margin-top: 6px; }
+
+        .table-card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+        .table-card-header { padding: 18px 22px; border-bottom: 1px solid #f0f4ff; display: flex; align-items: center; justify-content: space-between; }
+        .table-card-header h6 { color: #1a237e; font-weight: 700; margin: 0; font-size: 0.9rem; }
+        .table-card-header small { color: #90a4ae; font-size: 0.72rem; }
+
+        .btnx-refresh {
+            background: linear-gradient(135deg, #1a237e, #3f51b5);
+            color: white; border: none; border-radius: 10px;
+            padding: 8px 16px; font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .btnx-refresh:hover { opacity: 0.85; }
+
+        .table { margin: 0; }
+        .table thead th { background: #f8faff; color: #7986cb; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; padding: 13px 18px; border: none; }
+        .table tbody td { padding: 13px 18px; vertical-align: middle; font-size: 0.83rem; color: #37474f; border-bottom: 1px solid #f5f7ff; }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background: #fafbff; }
+        .nama-backup { font-weight: 600; color: #1a237e; }
+
+        .bdg-laravel { background: #fff0eb; color: #d84315; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .bdg-nodejs  { background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .bdg-count   { background: #e8eaf6; color: #3f51b5; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+
+        .btnx-detail {
+            background: linear-gradient(135deg, #1a237e, #3f51b5) !important;
+            color: white !important; border: none !important; border-radius: 8px !important;
+            padding: 6px 14px !important; font-size: 0.75rem !important; font-weight: 600 !important;
+            cursor: pointer !important; display: inline-flex !important; align-items: center !important; gap: 5px !important;
+            transition: opacity 0.2s !important; text-decoration: none !important;
+        }
+        .btnx-detail:hover { opacity: 0.85 !important; }
+
+        .modal-content { border: none; border-radius: 14px; overflow: hidden; }
+        .modal-header { background: linear-gradient(135deg, #1a237e, #3f51b5); color: white; padding: 18px 22px; }
+        .modal-header .btn-close { filter: invert(1) brightness(2); }
+        .modal-title { font-weight: 700; font-size: 0.95rem; }
+        .modal-body { padding: 0; }
+        .modal-footer { border-top: 1px solid #f0f4ff; padding: 14px 22px; }
+        .total-box { background: #f0f4ff; border-radius: 10px; padding: 9px 14px; font-size: 0.82rem; color: #1a237e; font-weight: 600; }
+
+        .bdg-plus  { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .bdg-minus { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+
+        .no-data { padding: 50px 20px; text-align: center; color: #b0bec5; }
+        .no-data i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+        .no-data p { font-size: 0.85rem; margin: 0; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>
+            <div class="brand-icon"><i class="fas fa-wallet text-white"></i></div>
+            <div>Noted Money<small>Dashboard Backup</small></div>
+        </h4>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main Menu</div>
+        <button type="button" class="menu-item active"><i class="fas fa-database"></i> Data Backup</button>
+    </div>
+    <div class="sidebar-footer">
+        <small><i class="fas fa-circle text-success me-1" style="font-size:0.45rem;"></i>Server Online</small><br>
+        <small>Noted Money v1.0</small>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="topbar">
+        <h5><i class="fas fa-tachometer-alt me-2"></i>Dashboard Overview</h5>
+        <div class="d-flex align-items-center gap-3">
+            <div class="live-badge"><div class="live-dot"></div> Live</div>
+            <span class="last-update" id="lastUpdate">Memuat...</span>
+        </div>
+    </div>
+
+    <div class="page-content">
+        <div class="welcome-card">
+            <h2>Selamat Datang! 👋</h2>
+            <p>Monitor semua data backup transaksi keuangan kamu secara realtime di sini.</p>
+            <i class="fas fa-database big-icon"></i>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="icon-box icon-blue"><i class="fas fa-archive"></i></div>
+                    <div class="stat-number" id="statTotal">-</div>
+                    <div class="stat-label">Total Backup</div>
+                    <div class="stat-sub">Semua channel</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="icon-box icon-orange"><i class="fab fa-laravel"></i></div>
+                    <div class="stat-number" id="statLaravel">-</div>
+                    <div class="stat-label">Via Laravel</div>
+                    <div class="stat-sub">Channel Laravel</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="icon-box icon-green"><i class="fab fa-node-js"></i></div>
+                    <div class="stat-number" id="statNodejs">-</div>
+                    <div class="stat-label">Via NodeJS</div>
+                    <div class="stat-sub">Channel NodeJS</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="icon-box icon-purple"><i class="fas fa-receipt"></i></div>
+                    <div class="stat-number" id="statTransaksi">-</div>
+                    <div class="stat-label">Total Transaksi</div>
+                    <div class="stat-sub">Semua backup</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-card-header">
+                <div>
+                    <h6><i class="fas fa-list me-2"></i>Riwayat Backup</h6>
+                    <small>Data diperbarui otomatis setiap 10 detik</small>
+                </div>
+                <button class="btnx-refresh" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Backup</th>
+                            <th>Channel</th>
+                            <th>Jumlah Transaksi</th>
+                            <th>Waktu Backup</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelBackup">
+                        <tr><td colspan="6" class="text-center py-4 text-muted">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetail" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt me-2"></i>Detail Transaksi
+                    <span id="modalNamaBackup" style="font-size:0.82rem; opacity:0.8;"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Uraian</th>
+                                <th>Nominal</th>
+                                <th>Jenis</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelDetail">
+                            <tr><td colspan="5" class="text-center py-4 text-muted">Memuat...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="total-box me-auto">
+                    <i class="fas fa-calculator me-2"></i>Saldo: <span id="totalNominal">-</span>
+                </div>
+                <button type="button" class="btnx-detail" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script>
+    function formatRupiah(angka) {
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+    }
+    function formatTanggal(tgl) {
+        return new Date(tgl).toLocaleDateString('id-ID', {
+            day:'2-digit', month:'short', year:'numeric',
+            hour:'2-digit', minute:'2-digit'
+        });
+    }
+
+    function renderTabel(data) {
+        const tbody = document.getElementById('tabelBackup');
+        if(!data || data.length === 0){
+            tbody.innerHTML = `<tr><td colspan="6"><div class="no-data"><i class="fas fa-inbox"></i><p>Belum ada data backup</p></div></td></tr>`;
+            ['statTotal','statLaravel','statNodejs','statTransaksi'].forEach(id => document.getElementById(id).textContent = '0');
+            return;
+        }
+        let html = '', totalTransaksi = 0, countLaravel = 0, countNodejs = 0;
+        data.forEach((item, i) => {
+            totalTransaksi += parseInt(item.jumlah_transaksi || 0);
+            if(item.channel === 'laravel') countLaravel++; else countNodejs++;
+            html += `
+            <tr>
+                <td>${i+1}</td>
+                <td><span class="nama-backup">${item.nama}</span></td>
+                <td>${item.channel === 'laravel'
+                    ? '<span class="bdg-laravel"><i class="fab fa-laravel"></i> Laravel</span>'
+                    : '<span class="bdg-nodejs"><i class="fab fa-node-js"></i> NodeJS</span>'
+                }</td>
+                <td><span class="bdg-count">${item.jumlah_transaksi} transaksi</span></td>
+                <td>${formatTanggal(item.waktu)}</td>
+                <td><button class="btnx-detail" type="button" onclick="lihatDetail('${item.id}','${item.nama}')"><i class="fas fa-eye"></i> Detail</button></td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+        document.getElementById('statTotal').textContent = data.length;
+        document.getElementById('statLaravel').textContent = countLaravel;
+        document.getElementById('statNodejs').textContent = countNodejs;
+        document.getElementById('statTransaksi').textContent = totalTransaksi;
+    }
+
+    async function refreshData() {
+        try {
+            const res = await fetch('/api/backup');
+            const data = await res.json();
+            renderTabel(data);
+            document.getElementById('lastUpdate').textContent = 'Update: ' + new Date().toLocaleTimeString('id-ID');
+        } catch(e) { console.log('Error:', e); }
+    }
+
+    async function lihatDetail(id, nama) {
+        document.getElementById('modalNamaBackup').textContent = '— ' + nama;
+        document.getElementById('tabelDetail').innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Memuat data...</td></tr>';
+        document.getElementById('totalNominal').textContent = '-';
+
+        const modal = new bootstrap.Modal(document.getElementById('modalDetail'));
+        modal.show();
+
+        try {
+            const res = await fetch('/api/detail/' + id);
+            const data = await res.json();
+            if(!data || data.length === 0){
+                document.getElementById('tabelDetail').innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Tidak ada data transaksi</td></tr>';
+                return;
+            }
+            let html = '', saldo = 0;
+            data.forEach((item, i) => {
+                const nominal = parseFloat(item.nominal);
+                saldo += item.jenis === '+' ? nominal : -nominal;
+                html += `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${item.uraian}</td>
+                    <td>${formatRupiah(nominal)}</td>
+                    <td>${item.jenis === '+' ? '<span class="bdg-plus">+ Pemasukan</span>' : '<span class="bdg-minus">- Pengeluaran</span>'}</td>
+                    <td>${formatTanggal(item.tgl_jam)}</td>
+                </tr>`;
+            });
+            document.getElementById('tabelDetail').innerHTML = html;
+            document.getElementById('totalNominal').textContent = formatRupiah(Math.abs(saldo)) + (saldo >= 0 ? ' (Surplus)' : ' (Defisit)');
+        } catch(e) { console.log('Error detail:', e); }
+    }
+
+    const dataBackupButton = document.getElementById('btnDataBackup');
+    if (dataBackupButton) {
+        dataBackupButton.addEventListener('click', refreshData);
+    }
+
+    refreshData();
+    setInterval(refreshData, 10000);
+</script>
+</body>
+</html>
